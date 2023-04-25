@@ -1,0 +1,30 @@
+pipeline
+{
+   agent {
+    label 'masternodes' 
+    }
+    stages 
+    {
+        stage('Print Variable Value') 
+        {
+            steps
+            {
+                echo "Email address is: ${var_email}"
+            }
+        }
+        
+        stage('Print Build Number and Username') 
+        {
+            steps
+            {
+                sh '''
+                    #!/bin/bash
+                    echo "Build number is: ${BUILD_NUMBER}"
+                    echo "Current user is: $(whoami)"
+                    
+                '''
+                  
+            }
+        }
+    }
+}
