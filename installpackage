@@ -1,6 +1,6 @@
 pipeline {
 agent {
-label 'masternodes'
+label 'node1'
 }
 stages {
 stage('Check PostgreSQL and Install') {
