@@ -1,0 +1,64 @@
+pipeline {
+agent {
+label 'masternodes'
+}
+stages {
+stage('Check PostgreSQL and Install') {
+steps {
+script {
+check_postgresql()
+}
+}
+}
+stage('Start PostgreSQL') {
+steps {
+script {
+start_postgresql()
+}
+}
+}
+stage('Enable PostgreSQL') {
+steps {
+script {
+enable_postgresql()
+}
+}
+}
+}
+}
+
+def check_postgresql() {
+echo "Checking PostgreSQL installation..."
+sh '''
+if ! psql -V ; then
+sudo apt update && sudo apt install -y postgresql
+echo "PostgreSQL installation successfully completed."
+else
+echo "PostgreSQL is already installed."
+fi
+'''
+}
+
+def start_postgresql() {
+echo "Starting PostgreSQL service..."
+sh '''
+if [ $(systemctl is-active postgresql) != "active" ]; then
+sudo systemctl start postgresql
+echo "PostgreSQL has started and running."
+else
+echo "PostgreSQL is already running."
+fi
+'''
+}
+
+def enable_postgresql() {
+echo "Enabling PostgreSQL service..."
+sh '''
+if [ $(systemctl is-enabled postgresql) != "enabled" ]; then
+sudo systemctl enable postgresql
+echo "PostgreSQL service successfully enabled."
+else
+echo "PostgreSQL is already enabled."
+fi
+'''
+}
