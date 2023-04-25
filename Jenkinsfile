@@ -1,7 +1,7 @@
 
 pipeline {
     agent {
-    label 'masternodes' 
+    label 'node1' 
     }
     stages {
         stage("Parallel Jobs") {
