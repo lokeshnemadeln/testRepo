@@ -1,43 +1,29 @@
-
 pipeline {
-    agent {
-    label 'node1' 
-    }
-    stages {
-        stage("Parallel Jobs") {
-            parallel {
-                stage("Task A") 
-				{
-                  steps 
-				  { 
-					sh 'ls -la > command.output' 
-                  } 
-                }				
-                stage("Task C") 
-				{
-                   steps 
-				   { 
-					//sh 'mkdir /home/node1/lokesh'
-					sh '''
-                    #!/bin/bash
-                    if [ -d "/home/node1/lokesh" ]; then
-                            echo "Directory already exists"
-                        else
-                            mkdir "/home/node1/lokesh"
-                        fi
-                        '''
-                        
-					sh 'cp /home/node1/workspace/agentTest/command.output  /home/node1/lokesh '
-                   }   
-                }
-            }
+  agent {
+    label 'node1'
+  }
+  stages {
+    stage('parallel Task A & C') {
+      parallel {
+        stage('Print Job Name & Node Name') {
+          steps {
+            sh 'echo "The ${JOB_NAME} run on ${NODE_NAME}"'
+            echo "the global email is ${var_email}"
+          }
         }
-        stage('Task B') 
-			{ 
-				steps 
-				{ 
-					echo "The commandOutput run on Node1 "
-                } 
-			} 
+        stage("create file") {
+          steps {
+            sh 'ls -la > command.output'
+          }
+        }
+      }
     }
+    stage ("copy file to jenkins") {
+      steps {
+        echo "the global email is ${var_email}"
+        sh "ssh jenkins@192.168.1.4 mkdir -p lokesh"
+        sh "/usr/bin/scp /jenkins-node/workspace/agentTest/command.output jenkins@192.168.1.4:/home/jenkins/lokesh"
+      }
+    }
+  }
 }
