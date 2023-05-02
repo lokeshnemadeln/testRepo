@@ -1,0 +1,14 @@
+pipeline {
+    agent 
+    {
+        label 'jenkinsmaster'
+    }
+
+    stages {
+        stage('Install git on Node1 Using Ansible') {
+            steps {
+                ansiblePlaybook credentialsId: 'dce8a572-93be-485f-8ad6-aa040f1834bb', disableHostKeyChecking: true, installation: 'Ansible', inventory: '/etc/ansible/hosts', playbook: '/etc/ansible/playbook/install_git.yml'
+            }
+        }
+    }
+}
