@@ -1,0 +1,9 @@
+- name: Install Git
+  hosts: slave1
+  become: true
+  connection: ssh
+  tasks:
+    - name: Install Git
+      apt:
+        name: git
+        state: present
