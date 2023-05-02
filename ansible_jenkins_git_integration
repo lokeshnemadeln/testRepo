@@ -1,0 +1,23 @@
+pipeline
+{
+    agent 
+    {
+        label 'jenkinsmaster'
+    }
+
+    stages {
+        stage('Checkout') 
+        {
+            steps {
+               checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/lokeshnemadeln/testRepo.git']])
+            }
+        }
+        stage('Ansible Playbook Execution') 
+         {
+            steps {
+              sh 'ansible-playbook  $WORKSPACE/install_jenkins_nginx.yml'
+            }    
+         }
+    }
+}
+    
