@@ -6,13 +6,13 @@ pipeline
     }
 
     stages {
-        stage('Checkout') 
+        stage('Checkout Code') 
         {
             steps {
                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/lokeshnemadeln/testRepo.git']])
             }
         }
-        stage('Ansible Playbook Execution') 
+        stage('Installing Jenkins and Nginx') 
          {
             steps {
               sh 'ansible-playbook  $WORKSPACE/install_jenkins_nginx.yml'
