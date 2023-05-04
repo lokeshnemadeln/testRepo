@@ -37,7 +37,7 @@
     name: jenkins
     state: present
     notify:
-      - Restart Nginx
+      - Enable Nginx and Jenkins services
   when: ansible_distribution == "Ubuntu"
 
 - name: Install Jenkins on CentOS
@@ -45,6 +45,6 @@
     name: jenkins
     state: present
     notify:
-      - Restart Nginx
+      - Enable Nginx and Jenkins services
   when: ansible_distribution == "CentOS"
 
