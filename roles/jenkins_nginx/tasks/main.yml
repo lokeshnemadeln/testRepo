@@ -2,12 +2,16 @@
   apt:
     name: nginx
     state: present
+    notify:
+      - Restart Nginx
   when: ansible_distribution == "Ubuntu"
 
 - name: Install Nginx on CentOS
   yum:
     name: nginx
     state: present
+    notify:
+      - Restart Nginx
   when: ansible_distribution == "CentOS"
 
 - name: Install Jenkins keyring on Ubuntu
@@ -32,11 +36,15 @@
   apt:
     name: jenkins
     state: present
+    notify:
+      - Restart Nginx
   when: ansible_distribution == "Ubuntu"
 
 - name: Install Jenkins on CentOS
   yum:
     name: jenkins
     state: present
+    notify:
+      - Restart Nginx
   when: ansible_distribution == "CentOS"
 
