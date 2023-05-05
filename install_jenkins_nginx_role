@@ -5,7 +5,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                checkout scmGit(branches: [[name: '/refs/heads/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/lokeshnemadeln/testRepo.git']])
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/lokeshnemadeln/testRepo.git']])
             }
         }
         stage('Installing Jenkins and Nginx') {
