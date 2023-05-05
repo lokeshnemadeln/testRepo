@@ -1,7 +1,7 @@
 ---
 # This is the master YAML for installing the Jenkins and Nginx roles
 - name: Install Jenkins and Nginx
-  hosts: slave1
+  hosts: servers
   become: yes
   connection: ssh
   roles:
