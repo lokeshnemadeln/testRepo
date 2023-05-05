@@ -1,29 +1,22 @@
-pipeline
-{
-    agent 
-    {
+pipeline {
+    agent {
         label 'ansible'
     }
-
     stages {
-        stage('Checkout Code') 
-        {
+        stage('Checkout Code') {
             steps {
-               checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/lokeshnemadeln/testRepo.git']])
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/lokeshnemadeln/testRepo.git']])
             }
         }
-        stage('Installing Jenkins and Nginx') 
-         {
+        stage('Installing Jenkins and Nginx') {
             steps {
-              sh 'ansible-playbook  $WORKSPACE/install_jenkins_nginx.yml'
-            }    
-         }
+                sh 'ansible-playbook $WORKSPACE/install_jenkins_nginx.yml'
+            }
+        }
     }
     post {
-        always {
-            // Clean the workspace after the build
-            cleanWs()
-        }
-    }
+        always {
+            cleanWs() // Clean the workspace after the build
+        }
+    }
 }
-    
