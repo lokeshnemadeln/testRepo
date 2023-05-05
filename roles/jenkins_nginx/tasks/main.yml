@@ -10,8 +10,6 @@
   yum:
     name: nginx
     state: present
-    notify:
-      - Restart Nginx
   when: ansible_distribution == "CentOS"
 
 - name: Install Jenkins keyring on Ubuntu
@@ -37,8 +35,17 @@
     name: jenkins
     state: present
     notify:
-      - Enable Nginx and Jenkins services
+      - Restart Nginx
   when: ansible_distribution == "Ubuntu"
+  
+- name: Enable Nginx and Jenkins services
+  service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - nginx
+    - jenkins  
 
 - name: Install Jenkins on CentOS
   yum:
