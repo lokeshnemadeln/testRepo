@@ -18,6 +18,14 @@
     remote_src: true
     # delegate_to: "{{ groups['node1'][0] }}"
     # when: inventory_hostname == groups['node2'][0]
+    
+- name: Generate MD5 checksum of file
+  command: md5sum {{ backup_dir }}/{{ backup_file }}
+  register: md5_result
+
+- name: Debug MD5 checksum
+  debug:
+    var: md5_result.stdout    
 
 - name: Install PostgreSQL
   become: true
