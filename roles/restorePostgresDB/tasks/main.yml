@@ -34,14 +34,7 @@
 #     state: absent
 #   when: inventory_hostname in groups['node2']
 
-- name: Create database
-  become_method: sudo
-  become_user: postgres
-  postgresql_db:
-    name: "{{ db_name }}"
-    login_user: "{{ db_user }}"
-    login_password: "{{ db_password }}"
-  when: inventory_hostname in groups['node3']
+
 
 - name: Restore Postgres in node3
   shell: PGPASSWORD={{ db_password }} psql -U {{ db_user }} -d {{ db_name }} -f {{ backup_dir }}/{{ restore_file }}
