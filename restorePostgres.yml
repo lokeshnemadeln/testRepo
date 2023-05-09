@@ -1,0 +1,8 @@
+---
+# This is the master YAML for installing the Jenkins and Nginx roles
+- name: Backup Copy and Restore the database
+  hosts: node2:node3
+  become: yes
+  connection: ssh
+  roles:
+    - restorePostgresDB
