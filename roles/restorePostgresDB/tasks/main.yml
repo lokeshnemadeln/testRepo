@@ -35,7 +35,7 @@
 #   when: inventory_hostname in groups['node2']
 
 - name: Create database
-  become: true
+  become_method: sudo
   become_user: postgres
   postgresql_db:
     name: "{{ db_name }}"
