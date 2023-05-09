@@ -16,17 +16,25 @@
     src: "{{ backup_dir }}/{{ backup_file }}"
     dest: "{{ backup_dir }}/{{ restore_file }}"
     remote_src: true
-    # delegate_to: "{{ groups['node1'][0] }}"
-    # when: inventory_hostname == groups['node2'][0]
     
-- name: Generate MD5 checksum of file
+- name: Generate MD5 checksum of file on Node2
   command: md5sum {{ backup_dir }}/{{ backup_file }}
-  register: md5_result
+  when: inventory_hostname in groups['node2']
+  register: md5_result1
+  
+- name: Generate MD5 checksum of file on Node3
+  command: md5sum "{{ backup_dir }}/{{ restore_file }}"
+  when: inventory_hostname in groups['node3']
+  register: md5_result2
 
-- name: Debug MD5 checksum
+- name: Debug MD5 checksum of node2
   debug:
-    var: md5_result.stdout    
-
+    var: md5_result1.stdout 
+    
+- name: Debug MD5 checksum of node3
+  debug:
+    var: md5_result2.stdout
+    
 - name: Install PostgreSQL
   become: true
   apt:
