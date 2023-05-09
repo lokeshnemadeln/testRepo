@@ -1,1 +1,6 @@
-
+db_name: "pg_db"
+backup_dir: "/tmp/pg_backup"
+backup_file: "{{ db_name }}_backup_{{ ansible_date_time.day }}{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}.sql"
+restore_file: "{{ backup_file }}"
+db_user: "postgres"
+db_password: "postgres"
