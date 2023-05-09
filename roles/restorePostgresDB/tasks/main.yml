@@ -1,1 +1,53 @@
+- name: Create backup folder in node2 and node3
+  file:
+    path: "{{ backup_dir }}"
+    state: directory
+  when: inventory_hostname in groups['node2'] + groups['node3']
+  register: pg_dir_result
+
+- name: Take Postgres backup
+  shell: pg_dump {{ db_name }} | tee {{ backup_dir }}/{{ backup_file }}
+  register: pg_db_result
+
+- name: Copy backup file to node3
+  copy:
+    src: "{{ backup_dir }}/{{ backup_file }}"
+    dest: "{{ backup_dir }}/{{ restore_file }}"
+    remote_src: true
+    # delegate_to: "{{ groups['node1'][0] }}"
+    # when: inventory_hostname == groups['node2'][0]
+
+- name: Install PostgreSQL
+  become: true
+  apt:
+    name: postgresql
+    state: present
+  when: inventory_hostname in groups['node3']
+
+# - name: Delete database
+#   become_user: postgres
+#   postgresql_db:
+#     name: "{{ db_name }}"
+#     login_user: postgres
+#     login_password: postgres
+#     state: absent
+#   when: inventory_hostname in groups['node2']
+
+- name: Create database
+  become_user: postgres
+  postgresql_db:
+    name: "{{ db_name }}"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+  when: inventory_hostname in groups['node3']
+
+- name: Restore Postgres in node3
+  shell: PGPASSWORD={{ db_password }} psql -U {{ db_user }} -d {{ db_name }} -f {{ backup_dir }}/{{ restore_file }}
+  register: pg_restore_result
+  when: inventory_hostname == groups['node3'][0]
+
+- name: PostgreSQL restore result
+  debug:
+    var: pg_restore_result
+  when: inventory_hostname == groups['node3'][0]
 
