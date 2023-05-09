@@ -20,20 +20,20 @@
 - name: Generate MD5 checksum of file on Node2
   command: md5sum {{ backup_dir }}/{{ backup_file }}
   when: inventory_hostname in groups['node2']
-  register: md5_result1
+  register: md5_result
   
 - name: Generate MD5 checksum of file on Node3
   command: md5sum "{{ backup_dir }}/{{ restore_file }}"
   when: inventory_hostname in groups['node3']
-  register: md5_result2
+  register: md5_result
 
 - name: Debug MD5 checksum of node2
   debug:
-    var: md5_result1.stdout 
+    var: md5_result.stdout 
     
 - name: Debug MD5 checksum of node3
   debug:
-    var: md5_result2.stdout
+    var: md5_result.stdout
     
 - name: Install PostgreSQL
   become: true
