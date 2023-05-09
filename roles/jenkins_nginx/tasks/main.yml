@@ -1,83 +1,82 @@
-- name: Install Nginx on Ubuntu
-  apt:
-    name: nginx
-    state: present
-  when: ansible_os_family == "Debian"
+---
+  - name: Install Nginx on Ubuntu
+    apt:
+      name: nginx
+      state: present
+    when: ansible_os_family == "Debian"
 
-- name: Install Nginx on CentOS
-  yum:
-    name: nginx
-    state: present
-  when: ansible_os_family == "CentOS"
+  - name: Install Nginx on CentOS
+    yum:
+      name: nginx
+      state: present
+    when: ansible_os_family == "CentOS"
 
-- name: Install Jenkins keyring on Ubuntu
-  shell: curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-  when: ansible_os_family == "Debian"
+  - name: Install Jenkins keyring on Ubuntu
+    shell: curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+    when: ansible_os_family == "Debian"
 
-- name: Install Jenkins repository on Ubuntu
-  shell: echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
-  when: ansible_os_family == "Debian"
+  - name: Install Jenkins repository on Ubuntu
+    shell: echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+    when: ansible_os_family == "Debian"
 
-- name: Install OpenJDK on Ubuntu
-  apt:
-    name: openjdk-11-jdk
-    state: present
-  when: ansible_os_family == "Debian"
+  - name: Install OpenJDK on Ubuntu
+    apt:
+      name: openjdk-11-jdk
+      state: present
+    when: ansible_os_family == "Debian"
 
-- name: Install OpenJDK on CentOS
-  yum:
-    name: openjdk-11-jdk
-    state: present
-  when: ansible_os_family == "CentOS"
+  - name: Install OpenJDK on CentOS
+    yum:
+      name: openjdk-11-jdk
+      state: present
+    when: ansible_os_family == "CentOS"
 
-- name: Update apt package cache on Ubuntu
-  apt:
-    update_cache: yes
-  when: ansible_os_family == "Debian"
+  - name: Update apt package cache on Ubuntu
+    apt:
+      update_cache: yes
+    when: ansible_os_family == "Debian"
 
-- name: Update package cache on CentOS
-  yum:
-    update_cache: yes
-  when: ansible_os_family == "CentOS"
+  - name: Update package cache on CentOS
+    yum:
+      update_cache: yes
+    when: ansible_os_family == "CentOS"
 
-- name: Install Jenkins on Ubuntu
-  apt:
-    name: jenkins
-    state: present
-  when: ansible_os_family == "Debian"
-  notify: Restart Nginx
+  - name: Install Jenkins on Ubuntu
+    apt:
+      name: jenkins
+      state: present
+    when: ansible_os_family == "Debian"
+    notify: Restart Nginx
 
-- name: Install Jenkins on CentOS
-  yum:
-    name: jenkins
-    state: present
-  when: ansible_os_family == "CentOS"
+  - name: Install Jenkins on CentOS
+    yum:
+      name: jenkins
+      state: present
+    when: ansible_os_family == "CentOS"
 
-- name: Enable Nginx and Jenkins services
-  service:
-    name: "{{ item }}"
-    enabled: true
-    state: started
-  loop:
-    - nginx
-    - jenkins
-
-- name: Create Nginx configuration file for Jenkins
-  become: true
-  file:
-    path: /etc/nginx/conf.d/jenkins.conf
-    state: touch
-    owner: node2
-    group: node2
-    mode: 0755
-
-- name: Copy file from source server to target server
+  - name: Enable Nginx and Jenkins services
+    service:
+      name: "{{ item }}"
+      enabled: true
+      state: started
+    loop:
+      - nginx
+      - jenkins
+  - name: Create a file on the target system with specific ownership and permissions
+    file:
+      path: /etc/nginx/conf.d/jenkins.conf
+      state: touch
+      owner: target1
+      group: target1
+      mode: 0755
+    
+  - name: Copy file from source server to target server
     copy:
       src: /etc/ansible/jenkins.conf
       dest: /etc/nginx/conf.d/jenkins.conf
-      
-- name: Reboot the system
-  become: true
-  reboot:
-    reboot_timeout: 3600
-    msg: "Reboot initiated by Ansible"
+     
+  - name: Reboot the system
+    become: true
+    reboot:
+      reboot_timeout: 3600
+      msg: "Reboot initiated by Ansible"
