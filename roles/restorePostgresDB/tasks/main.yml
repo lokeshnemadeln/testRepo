@@ -6,7 +6,8 @@
   register: pg_dir_result
 
 - name: Take Postgres backup
-  shell: pg_dump {{ db_name }} | tee {{ backup_dir }}/{{ backup_file }}
+  #shell: pg_dump {{ db_name }} | tee {{ backup_dir }}/{{ backup_file }}
+  shell:  PGPASSWORD={{ db_password }} pg_dump -U {{ db_user }} -h localhost {{ db_name }} | tee {{ backup_dir }}/{{ backup_file }}
   register: pg_db_result
 
 - name: Copy backup file to node3
