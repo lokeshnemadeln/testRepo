@@ -5,4 +5,4 @@
   become: yes
   connection: ssh
   roles:
-    - jenkins_ngninx
+    - jenkins_nginx
