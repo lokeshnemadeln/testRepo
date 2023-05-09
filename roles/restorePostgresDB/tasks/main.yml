@@ -37,7 +37,7 @@
 
 
 - name: Restore Postgres in node3
-  shell: PGPASSWORD=node3 psql -U node3 -d {{ db_name }} -f {{ backup_dir }}/{{ restore_file }}
+  shell: PGPASSWORD={{ db_password }} psql -U {{ db_user }} -d {{ db_name }} -f {{ backup_dir }}/{{ restore_file }}
   register: pg_restore_result
   when: inventory_hostname == groups['node3'][0]
 
