@@ -40,7 +40,7 @@
     md5_2: "{{ md5_file2.stdout.split()[0] }}"
   assert:
     that:
-      - md5_1 == md5_2
+      - md5_file1.stdout_lines[0].split()[0] == md5_file2.stdout_lines[0].split()[0]
     fail_msg: "MD5 checksums do not match"
     success_msg: "MD5 checksums match"    
     
