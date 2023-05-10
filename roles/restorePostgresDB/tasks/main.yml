@@ -6,9 +6,8 @@
   register: pg_dir_result
 
 - name: Take Postgres backup
-  #shell: pg_dump {{ db_name }} | tee {{ backup_dir }}/{{ backup_file }}
   become: true
-  shell:  PGPASSWORD={{ db_password }} pg_dump -U {{ db_user }} -h localhost {{ db_name }} |  tee > {{ backup_dir }}/{{ backup_file }}
+  shell: PGPASSWORD={{ db_password }} pg_dump -U {{ db_user }} -h localhost {{ db_name }} | tee > {{ backup_dir }}/{{ backup_file }}
   register: pg_db_result
 
 - name: Copy backup file to node3
@@ -36,14 +35,14 @@
     var: md5_file2.stdout
     
 - name: Compare MD5 checksums
-      vars:
-        md5_1: "{{ md5_file1.stdout.split()[0] }}"
-        md5_2: "{{ md5_file2.stdout.split()[0] }}"
-      assert:
-        that:
-          - md5_1 == md5_2
-        fail_msg: "MD5 checksums do not match"
-        success_msg: "MD5 checksums match"    
+  vars:
+    md5_1: "{{ md5_file1.stdout.split()[0] }}"
+    md5_2: "{{ md5_file2.stdout.split()[0] }}"
+  assert:
+    that:
+      - md5_1 == md5_2
+    fail_msg: "MD5 checksums do not match"
+    success_msg: "MD5 checksums match"    
     
 - name: Install PostgreSQL
   become: true
@@ -51,17 +50,6 @@
     name: postgresql
     state: present
   when: inventory_hostname in groups['node3']
-
-# - name: Delete database
-#   become_user: postgres
-#   postgresql_db:
-#     name: "{{ db_name }}"
-#     login_user: postgres
-#     login_password: postgres
-#     state: absent
-#   when: inventory_hostname in groups['node2']
-
-
 
 - name: Restore Postgres in node3
   shell: PGPASSWORD={{ db_password }} psql -U {{ db_user }} -d {{ db_name }} -f {{ backup_dir }}/{{ restore_file }}
@@ -72,4 +60,3 @@
   debug:
     var: pg_restore_result
   when: inventory_hostname == groups['node3'][0]
-
