@@ -3,7 +3,6 @@
 - name: Backup Copy and Restore the database
   hosts: node2:node3
   become: yes
-  become_user: postgres
   connection: ssh
   roles:
     - restorePostgresDB
