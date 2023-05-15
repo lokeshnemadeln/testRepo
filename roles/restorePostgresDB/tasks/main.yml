@@ -6,7 +6,8 @@
 
 - name: Take Postgres backup in node2
   become: true
-  shell: PGPASSWORD={{ db_password }} pg_dump -U {{ db_user }} -h {{ db_host }} {{ db_name }} > {{ backup_dir }}/{{ backup_file }}.sql
+  #shell: PGPASSWORD={{ db_password }} pg_dump -U {{ db_user }} -h {{ db_host }} {{ db_name }} > {{ backup_dir }}/{{ backup_file }}.sql
+  shell: -u {{db_user}} pg_dump {{db_name}} > {{ backup_dir }}/{{ backup_file }}.sql
   register: pg_db_result
   when: inventory_hostname in groups['node2'][0]
 
