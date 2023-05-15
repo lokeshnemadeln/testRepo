@@ -8,7 +8,7 @@ pipeline {
                 checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/lokeshnemadeln/testRepo.git']])
             }
         }
-        stage('Installing Jenkins and Nginx') {
+        stage('Restore Postgres Backup on Target Server') {
             steps {
                 sh 'ansible-playbook $WORKSPACE/restorePostgres.yml'
             }
