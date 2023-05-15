@@ -23,27 +23,26 @@
     format: gz
   when: inventory_hostname in groups['node2'][0]
 
-- name: Copy file from node2 to controller machine
+- name: Copy compress file from target machine
   fetch:
     src: "{{ backup_dir }}/{{ backup_file }}.gz"
     dest: "{{ backup_dir }}/"
     flat: yes
   when: inventory_hostname in groups['node2'][0]
 
-- name: Copy file from controler to target machine
+- name: Copy file from target1  to target2 machine
   copy:
     src: "{{ backup_dir }}/{{ backup_file }}.gz"
     dest: "{{ backup_dir }}/{{ backup_file }}.gz"
   register: copy_path
   when: inventory_hostname == groups['node3'][0]
 
-- name: Print copy path from controler to target machine
+- name: Print copy path of target2 machine
   debug:
     var: copy_path
   when: inventory_hostname in groups['node3'][0]
 
 - name: Generate md5sum of zip file on node2
-  #shell: "md5sum {{ backup_dir }}/{{ backup_file }}.gz | awk '{ print $1 }'"
   shell: md5sum "{{ backup_dir }}/{{ backup_file }}.gz"
   register: md5_node2
 
@@ -52,7 +51,6 @@
     var: md5_node2.stdout[0:32]
 
 - name: Generate md5sum of zip file on node3
-  #shell: "md5sum {{ backup_dir }}/{{ backup_file }}.gz | awk '{ print $1 }'"
   shell: md5sum "{{ backup_dir }}/{{ backup_file }}.gz"
   register: md5_node3
 
