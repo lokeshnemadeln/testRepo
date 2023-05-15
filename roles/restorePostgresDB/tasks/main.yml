@@ -1,1 +1,176 @@
+- name: Create backup folder in node1 and node2
+  file:
+    path: "{{ backup_dir }}"
+    state: directory
+  when: inventory_hostname in groups['node1'] + groups['node2']
+
+- name: Take Postgres backup in node1
+  shell: PGPASSWORD={{ db_password }} pg_dump -U {{ db_user }} -h {{ db_host }} {{ db_name }} > {{ backup_dir }}/{{ backup_file }}.sql
+  register: pg_db_result
+  when: inventory_hostname in groups['node1'][0]
+
+- name: PostgreSQL backup result in node1
+  debug:
+    var: pg_db_result
+  when: inventory_hostname in groups['node1'][0]
+
+- name: Compress PostgreSQL backup in node1
+  archive:
+    path: "{{ backup_dir }}/{{ backup_file }}.sql"
+    dest: "{{ backup_dir }}/{{ backup_file }}.gz"
+    format: gz
+  when: inventory_hostname in groups['node1'][0]
+
+- name: Copy file from node1 to controller machine
+  fetch:
+    src: "{{ backup_dir }}/{{ backup_file }}.gz"
+    dest: "{{ backup_dir }}/"
+    flat: yes
+  when: inventory_hostname in groups['node1'][0]
+
+- name: Copy file from controler to target machine
+  copy:
+    src: "{{ backup_dir }}/{{ backup_file }}.gz"
+    dest: "{{ backup_dir }}/{{ backup_file }}.gz"
+  register: copy_path
+  when: inventory_hostname == groups['node2'][0]
+
+- name: Print copy path from controler to target machine
+  debug:
+    var: copy_path
+  when: inventory_hostname in groups['node2'][0]
+
+- name: Generate md5sum of zip file on node1
+  #shell: "md5sum {{ backup_dir }}/{{ backup_file }}.gz | awk '{ print $1 }'"
+  shell: md5sum "{{ backup_dir }}/{{ backup_file }}.gz"
+  register: md5_node1
+
+- name: Md5 result in node1
+  debug:
+    var: md5_node1.stdout[0:32]
+
+- name: Generate md5sum of zip file on node2
+  #shell: "md5sum {{ backup_dir }}/{{ backup_file }}.gz | awk '{ print $1 }'"
+  shell: md5sum "{{ backup_dir }}/{{ backup_file }}.gz"
+  register: md5_node2
+
+- name: Md5 result in node2
+  debug:
+    var: md5_node2.stdout[0:32]
+
+- name: Compare md5sum values of node1 and node2
+  debug:
+    msg: "SUCCESS: Node1 and Node2 have the same MD5 hash values"
+  when: md5_node1.stdout[0:32] == md5_node2.stdout[0:32] and inventory_hostname in groups['node1'] + groups['node2']
+
+- name: Unzip the backup file
+  shell: gunzip {{ backup_dir }}/{{ backup_file }}.gz
+  when: inventory_hostname in groups['node2'][0]
+
+- name: Install PostgreSQL
+  become: true
+  apt:
+    name: postgresql
+    state: present
+  when: inventory_hostname in groups['node2'][0]
+
+- name: Delete database
+  become_user: postgres
+  postgresql_db:
+    name: "{{ db_name }}"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+    state: absent
+  when: inventory_hostname in groups['node2'][0]
+
+- name: Create database
+  become_user: postgres
+  postgresql_db:
+    name: "{{ db_name }}"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+    state: present
+  when: inventory_hostname in groups['node2'][0]
+
+- name: Restore Postgres in node2
+  shell: PGPASSWORD={{ db_password }} psql -U {{ db_user }} -d {{ db_name }} -f {{ backup_dir }}/{{ backup_file }}
+  register: pg_restore_result
+  when: inventory_hostname in groups['node2'][0]
+
+- name: PostgreSQL restore result
+  debug:
+    var: pg_restore_result
+  when: inventory_hostname in groups['node2'][0]
+
+- name: List of tables in node1
+  postgresql_query:
+    query: "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='public';"
+    db: "{{ db_name }}"
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+  register: list_tables
+  when: inventory_hostname in groups['node1'][0]
+
+- name: Display list of tables in node1
+  debug:
+    var: list_tables.query_all_results | json_query('[0][0].tablename')
+  when: inventory_hostname in groups['node1'][0]
+
+- name: Check number of rows in node1
+  postgresql_query:
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+    db: "{{ db_name }}"
+    query: "SELECT COUNT(*) FROM {{ table_name }};"
+  register: row_count
+  when: inventory_hostname in groups['node1'][0]
+
+- name: Print row count in node1
+  debug:
+    var: row_count.query_all_results | json_query('[0][0].count')
+  when: inventory_hostname in groups['node1'][0]
+
+- name: List of tables in node2
+  postgresql_query:
+    query: "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='public';"
+    db: "{{ db_name }}"
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+  register: list_tables
+  when: inventory_hostname in groups['node2'][0]
+
+- name: Display list of tables in node2
+  debug:
+    var: list_tables.query_all_results | json_query('[0][0].tablename')
+  when: inventory_hostname in groups['node2'][0]
+
+- name: Check number of rows in node2
+  postgresql_query:
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+    db: "{{ db_name }}"
+    query: "SELECT COUNT(*) FROM {{ table_name }};"
+  register: row_count
+  when: inventory_hostname in groups['node2'][0]
+
+- name: Print row count in node2
+  debug:
+    var: row_count.query_all_results | json_query('[0][0].count')
+  when: inventory_hostname in groups['node2'][0]
+
+- name: compare tables of rows on node1 and node2
+  debug:
+    msg: "SUCCESS: Node1 and Node2 have the same tables"
+  when: md5_node1.row_count.query_all_results | json_query('[0][0].tablename') == md5_node2.row_count.query_all_results | json_query('[0][0].tablename') and inventory_hostname in groups['node1'] + groups['node2']
+
+- name: compare number of rows on node1 and node2
+  debug:
+    msg: "SUCCESS: Node1 and Node2 have the same number of rows"
+  when: md5_node1.row_count.query_all_results | json_query('[0][0].count') == md5_node2.row_count.query_all_results | json_query('[0][0].count') and inventory_hostname in groups['node1'] + groups['node2']
+
+ 
 
