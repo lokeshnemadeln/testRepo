@@ -45,25 +45,25 @@
 - name: Generate md5sum of zip file on node2
   #shell: "md5sum {{ backup_dir }}/{{ backup_file }}.gz | awk '{ print $1 }'"
   shell: md5sum "{{ backup_dir }}/{{ backup_file }}.gz"
-  register: md5_node1
-
-- name: Md5 result in node1
-  debug:
-    var: md5_node1.stdout[0:32]
-
-- name: Generate md5sum of zip file on node3
-  #shell: "md5sum {{ backup_dir }}/{{ backup_file }}.gz | awk '{ print $1 }'"
-  shell: md5sum "{{ backup_dir }}/{{ backup_file }}.gz"
   register: md5_node2
 
 - name: Md5 result in node2
   debug:
     var: md5_node2.stdout[0:32]
 
+- name: Generate md5sum of zip file on node3
+  #shell: "md5sum {{ backup_dir }}/{{ backup_file }}.gz | awk '{ print $1 }'"
+  shell: md5sum "{{ backup_dir }}/{{ backup_file }}.gz"
+  register: md5_node3
+
+- name: Md5 result in node3
+  debug:
+    var: md5_node3.stdout[0:32]
+
 - name: Compare md5sum values of node2 and node3
   debug:
     msg: "SUCCESS: Node2 and Node3 have the same MD5 hash values"
-  when: md5_node1.stdout[0:32] == md5_node2.stdout[0:32] and inventory_hostname in groups['node2'] + groups['node3']
+  when: md5_node2.stdout[0:32] == md5_node3.stdout[0:32] and inventory_hostname in groups['node2'] + groups['node3']
 
 - name: Unzip the backup file
   shell: gunzip {{ backup_dir }}/{{ backup_file }}.gz
